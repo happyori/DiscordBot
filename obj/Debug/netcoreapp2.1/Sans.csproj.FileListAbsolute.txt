@@ -1,0 +1,11 @@
+/home/ori/Desktop/Programs/DiscordBot/Sans/bin/Debug/netcoreapp2.1/Sans.deps.json
+/home/ori/Desktop/Programs/DiscordBot/Sans/bin/Debug/netcoreapp2.1/Sans.runtimeconfig.json
+/home/ori/Desktop/Programs/DiscordBot/Sans/bin/Debug/netcoreapp2.1/Sans.runtimeconfig.dev.json
+/home/ori/Desktop/Programs/DiscordBot/Sans/bin/Debug/netcoreapp2.1/Sans.dll
+/home/ori/Desktop/Programs/DiscordBot/Sans/bin/Debug/netcoreapp2.1/Sans.pdb
+/home/ori/Desktop/Programs/DiscordBot/Sans/obj/Debug/netcoreapp2.1/Sans.csprojAssemblyReference.cache
+/home/ori/Desktop/Programs/DiscordBot/Sans/obj/Debug/netcoreapp2.1/Sans.csproj.CoreCompileInputs.cache
+/home/ori/Desktop/Programs/DiscordBot/Sans/obj/Debug/netcoreapp2.1/Sans.AssemblyInfoInputs.cache
+/home/ori/Desktop/Programs/DiscordBot/Sans/obj/Debug/netcoreapp2.1/Sans.AssemblyInfo.cs
+/home/ori/Desktop/Programs/DiscordBot/Sans/obj/Debug/netcoreapp2.1/Sans.dll
+/home/ori/Desktop/Programs/DiscordBot/Sans/obj/Debug/netcoreapp2.1/Sans.pdb
