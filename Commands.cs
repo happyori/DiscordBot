@@ -37,3 +37,22 @@ public class Info : ModuleBase
 		await ReplyAsync($"{userInfo.Username}#{userInfo.Discriminator}");
 	}
 }
+
+[Group("admin")]
+[RequireUserPermission(GuildPermission.Administrator)]
+public class Admin : ModuleBase
+{
+	[Group("clean")]
+	public class CleanModule : ModuleBase
+	{
+		/* !admin clean 10 */
+		[Command]
+		public async Task Default(int count = 10) => Messages(count);
+		/* !admin clean messages 10 */
+		[Command("messages")]
+		public async Task Messages(int count = 10)
+		{
+			
+		}
+	}
+}
