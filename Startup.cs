@@ -33,7 +33,7 @@ namespace DiscordBot
 
 			var provider = services.BuildServiceProvider();
 			provider.GetRequiredService<LoggingService>();
-			provider.GetRequiredService<CommandHandler>();
+				provider.GetRequiredService<CommandHandler>();
 
 			await provider.GetRequiredService<StartupService>().StartAsync();
 			await Task.Delay(-1);
@@ -54,6 +54,7 @@ namespace DiscordBot
 			}))
 			.AddSingleton<StartupService>()
 			.AddSingleton<LoggingService>()
+			.AddSingleton<CommandHandler>()
 			.AddSingleton<Random>()
 			.AddSingleton(Configuration);
 		}
