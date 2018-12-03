@@ -9,6 +9,10 @@ using DiscordBot.Services;
 
 namespace DiscordBot
 {
+	public static class Globals
+	{
+		public static ulong AuthorId {get; set;}
+	}
     public class Startup
     {
 		public IConfigurationRoot Configuration { get; }

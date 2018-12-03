@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using DiscordBot;
 
 namespace DiscordBot.Services
 {
@@ -34,6 +35,8 @@ namespace DiscordBot.Services
 				return ;
 			if (msg.Author.Id == _client.CurrentUser.Id)
 				return ;
+
+			Globals.AuthorId = msg.Author.Id;
 
 			var context = new SocketCommandContext(_client, msg);
 
