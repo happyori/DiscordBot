@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace DiscordBot.Modules
 {
+	[Name("Help")]
     public class HelpModule : ModuleBase<SocketCommandContext>
     {
         private readonly CommandService _services;
@@ -17,13 +18,14 @@ namespace DiscordBot.Modules
 			_config = config;
 		}
 
+		[Name("Help")]
 		[Command("help")]
 		public async Task HelpAsync()
 		{
 			string prefix = _config["prefix"];
 			var builder = new EmbedBuilder()
 			{
-				Color = new Color(114, 137, 210),
+				Color = new Color(86, 20, 127),
 				Description = "These are the commands you use"
 			};
 
@@ -34,8 +36,10 @@ namespace DiscordBot.Modules
 				foreach (var cmd in module.Commands)
 				{
 					var result = await cmd.CheckPreconditionsAsync(Context);
-					if (result.IsSuccess)
-						description += $"{prefix}{cmd.Aliases.First()}\n";
+					if (result.IsSuccess && !module.IsSubmodule)
+						description += $"{cmd.Name} : {prefix}{cmd.Aliases.First()}\n";
+					else if (result.IsSuccess && module.IsSubmodule)
+						description += $"{cmd.Name} : {prefix}{module.Parent.Aliases.First()} {cmd.Aliases.First()}\n";
 				}
 
 				if (!string.IsNullOrWhiteSpace(description))
@@ -52,6 +56,7 @@ namespace DiscordBot.Modules
 			await ReplyAsync("", false, builder.Build());
 		}
 
+		[Name("Help [Command]")]
 		[Command("help")]
 		public async Task HelpAsync(string commandName)
 		{
@@ -66,7 +71,7 @@ namespace DiscordBot.Modules
 			string prefix = _config["prefix"];
 			var builder = new EmbedBuilder()
 			{
-				Color = new Color(114, 137, 210),
+				Color = new Color(86, 20, 127),
 				Description = $"Here are some commands like **{commandName}**"
 			};
 

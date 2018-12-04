@@ -5,32 +5,66 @@ using System.Threading.Tasks;
 
 namespace DiscordBot.Modules
 {
-	[Name("AdminModule")]
+	[Name("Admin")]
     public class AdminModule : ModuleBase<SocketCommandContext>
     {
+		[Name("Say")]
         [Command("say"), Alias("s")]
 		[Summary("Echoes what's been said")]
 		[RequireUserPermission(GuildPermission.Administrator)]
 		public Task Say([Remainder] string msg)
 			=> ReplyAsync(msg);
 
+		[Name("Admin - Set")]
 		[Group("set")]
 		[RequireContext(ContextType.Guild)]
 		public class Set : ModuleBase
 		{
-			[Command("nick"), Priority(1)]
+			[Name("Nick [Name]")]
+			[Command("nickself")]
 			[Summary("Set your own nickname to the specified phrase.")]
 			[RequireUserPermission(GuildPermission.ChangeNickname)]
 			public Task Nick([Remainder] string name)
 				=> Nick(Context.User as SocketGuildUser, name);
-			[Command("nick"), Priority(0)]
+			[Name("Nick [User] [Name]")]
+			[Command("nick")]
 			[Summary("Set specified user's nickname to the specified phrase.")]
 			[RequireUserPermission(GuildPermission.ChangeNickname)]
 			public async Task Nick(SocketGuildUser user, [Remainder] string name)
 			{
-				await user.ModifyAsync(x => x.Nickname = name);
+				var botUser = await Context.Guild.GetUserAsync(Context.Client.CurrentUser.Id);
+				if (user.Hierarchy > (botUser as SocketGuildUser).Hierarchy)
+				{
+					await ReplyAsync($"{user.Mention} is superior to this humble bot");
+					return ;
+				}
+				await (user.ModifyAsync(x =>
+				{
+					x.Nickname = name;
+				}));
 				await ReplyAsync($"{user.Mention} I changed your name to **{name}**!");
 			}
+
+			[Name("Nick [User]")]
+			[Command("nick")]
+			[Summary("Set Specified user's nickname back")]
+			[RequireUserPermission(GuildPermission.ChangeNickname)]
+			public async Task Renick(SocketGuildUser user)
+			{
+				var botUser = await Context.Guild.GetUserAsync(Context.Client.CurrentUser.Id);
+				if (user.Hierarchy > (botUser as SocketGuildUser).Hierarchy)
+				{
+					await ReplyAsync($"{user.Mention} is superior to this humble bot");
+					return ;
+				}
+				await (user.ModifyAsync(x =>
+				{
+					x.Nickname = null;
+				}));
+				await ReplyAsync($"{user.Mention} I changed your name back!");
+			}
 		}
+		
+		
     }
 }
