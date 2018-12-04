@@ -26,7 +26,7 @@ namespace DiscordBot.Modules
 			var builder = new EmbedBuilder()
 			{
 				Color = new Color(86, 20, 127),
-				Description = "These are the commands you use"
+				Description = "These are the commands you can use"
 			};
 
 			foreach (var module in _services.Modules)
@@ -36,7 +36,7 @@ namespace DiscordBot.Modules
 				foreach (var cmd in module.Commands)
 				{
 					var result = await cmd.CheckPreconditionsAsync(Context);
-					if (result.IsSuccess && !module.IsSubmodule)
+					if (result.IsSuccess && (!module.IsSubmodule ||string.IsNullOrWhiteSpace(module.Parent.Aliases.First())))
 						description += $"{cmd.Name} : {prefix}{cmd.Aliases.First()}\n";
 					else if (result.IsSuccess && module.IsSubmodule)
 						description += $"{cmd.Name} : {prefix}{module.Parent.Aliases.First()} {cmd.Aliases.First()}\n";

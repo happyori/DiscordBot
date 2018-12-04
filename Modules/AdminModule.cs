@@ -12,8 +12,11 @@ namespace DiscordBot.Modules
         [Command("say"), Alias("s")]
 		[Summary("Echoes what's been said")]
 		[RequireUserPermission(GuildPermission.Administrator)]
-		public Task Say([Remainder] string msg)
-			=> ReplyAsync(msg);
+		public async Task Say([Remainder] string msg)
+		{
+
+			await ReplyAsync(msg);
+		}
 
 		[Name("Admin - Set")]
 		[Group("set")]
@@ -29,7 +32,7 @@ namespace DiscordBot.Modules
 			[Name("Nick [User] [Name]")]
 			[Command("nick")]
 			[Summary("Set specified user's nickname to the specified phrase.")]
-			[RequireUserPermission(GuildPermission.ChangeNickname)]
+			[RequireUserPermission(GuildPermission.ManageNicknames)]
 			public async Task Nick(SocketGuildUser user, [Remainder] string name)
 			{
 				var botUser = await Context.Guild.GetUserAsync(Context.Client.CurrentUser.Id);
@@ -48,7 +51,7 @@ namespace DiscordBot.Modules
 			[Name("Nick [User]")]
 			[Command("nick")]
 			[Summary("Set Specified user's nickname back")]
-			[RequireUserPermission(GuildPermission.ChangeNickname)]
+			[RequireUserPermission(GuildPermission.ManageNicknames)]
 			public async Task Renick(SocketGuildUser user)
 			{
 				var botUser = await Context.Guild.GetUserAsync(Context.Client.CurrentUser.Id);

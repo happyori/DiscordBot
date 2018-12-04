@@ -38,19 +38,19 @@ namespace DiscordBot.Modules
 				return ;
 			}
 			await ReplyAsync($"cy@ {user.Mention} :wave:");
-			await user.KickAsync();
+			await user.KickAsync($"Kicked by {Context.Client.CurrentUser.Username}#{Context.Client.CurrentUser.Discriminator}.");
 		}
 
-		[Name("Ban [User]")]
-		[Command("ban")]
-		[Summary("Bans a specified user.")]
-		[RequireUserPermission(GuildPermission.BanMembers)]
-		public async Task Ban([Remainder] SocketGuildUser user)
+		[Name("Kick [User] [Reason]")]
+		[Command("kick")]
+		[Summary("Kick a specified user with custom reason.")]
+		[RequireUserPermission(GuildPermission.KickMembers)]
+		public async Task Kick(SocketGuildUser user, [Remainder] string reason)
 		{
 			SocketGuildUser author = Context.Guild.GetUser(Globals.AuthorId);
 			if (author.DiscriminatorValue == user.DiscriminatorValue)
 			{
-				await ReplyAsync($"I am sure you had a reason to try to ban yourself...");
+				await ReplyAsync($"I am sure you had a reason to try to kick yourself...");
 				return ;
 			}
 			else if (author.Hierarchy <= user.Hierarchy)
@@ -58,30 +58,131 @@ namespace DiscordBot.Modules
 				await ReplyAsync($"The {user.Username}#{user.Discriminator} is superior or equal to you!");
 				return ;
 			}
-			await ReplyAsync($"The banhammer has fallen on you {user.Mention}, Goodbye and never be seen on our eye!");
-			await Context.Guild.AddBanAsync(user.Id);
+			await ReplyAsync($"cy@ {user.Mention} :wave:");
+			await user.KickAsync(reason);
 		}
 
-		[Name("Ban [Amount of days] [User]")]
-		[Command("ban")]
-		[Summary("Bans for specified amount of days the specified user.")]
-		[RequireUserPermission(GuildPermission.BanMembers)]
-		public async Task Ban(int days, [Remainder] SocketGuildUser user)
+		[Name("Moderator - Ban")]
+		[Group("ban")]
+		[RequireContext(ContextType.Guild)]
+
+		public class Ban : ModuleBase<SocketCommandContext>
 		{
-			SocketGuildUser author = Context.Guild.GetUser(Globals.AuthorId);
-			if (author.DiscriminatorValue == user.DiscriminatorValue)
+			[Name("Ban [User]")]
+			[Command]
+			[Summary("Bans a specified user.")]
+			[RequireUserPermission(GuildPermission.BanMembers)]
+			public async Task BanUnlimited([Remainder] SocketGuildUser user)
 			{
-				await ReplyAsync($"I am sure you had a reason to try to ban yourself...");
-				return ;
+				SocketGuildUser author = Context.Guild.GetUser(Globals.AuthorId);
+				if (author.DiscriminatorValue == user.DiscriminatorValue)
+				{
+					await ReplyAsync($"I am sure you had a reason to try to ban yourself...");
+					return ;
+				}
+				else if (author.Hierarchy <= user.Hierarchy)
+				{
+					await ReplyAsync($"The {user.Username}#{user.Discriminator} is superior or equal to you!");
+					return ;
+				}
+				await ReplyAsync($"The banhammer has fallen on you {user.Mention}, Goodbye and never be seen on our eye!");
+				await Context.Guild.AddBanAsync(user.Id, 0, $"Banned by {Context.Client.CurrentUser.Username}#{Context.Client.CurrentUser.Discriminator} for eternity.");
 			}
-			else if (author.Hierarchy <= user.Hierarchy)
+
+			[Name("Ban [Amount of days] [User]")]
+			[Command]
+			[Summary("Bans for specified amount of days the specified user.")]
+			[RequireUserPermission(GuildPermission.BanMembers)]
+			public async Task BanLimited(int days, [Remainder] SocketGuildUser user)
 			{
-				await ReplyAsync($"The {user.Username}#{user.Discriminator} is superior or equal to you!");
-				return ;
+				if (days < 0 || days > 7)
+				{
+					await ReplyAsync($"The range for the prune days is [0-7]!");
+					return ;
+				}
+
+				SocketGuildUser author = Context.Guild.GetUser(Globals.AuthorId);
+				if (author.DiscriminatorValue == user.DiscriminatorValue)
+				{
+					await ReplyAsync($"I am sure you had a reason to try to ban yourself...");
+					return ;
+				}
+				else if (author.Hierarchy <= user.Hierarchy)
+				{
+					await ReplyAsync($"The {user.Username}#{user.Discriminator} is superior or equal to you!");
+					return ;
+				}
+				await ReplyAsync($"The banhammer has fallen on you {user.Mention}, but you have a chance to repel! Comeback in {days} days.");
+				await Task.Delay(5000);
+				await Context.Guild.AddBanAsync(user.Id, days, $"Banned by {Context.Client.CurrentUser.Username}#{Context.Client.CurrentUser.Discriminator} for {days} days.");
 			}
-			await ReplyAsync($"The banhammer has fallen on you {user.Mention}, but you have a chance to repel! Comeback in {days} days.");
-			await Task.Delay(10000);
-			await Context.Guild.AddBanAsync(user.Id, days);
+
+			[Name("Ban List")]
+			[Command("list")]
+			[Summary("Shows the list of all the banned users.")]
+			public async Task ListBans()
+			{
+				var bans = await Context.Guild.GetBansAsync();
+				var builder = new EmbedBuilder()
+				{
+					Color = new Color(86, 20, 127),
+					Description = "These are the currently banned users"
+				};
+
+				if (bans.Count == 0)
+				{
+					builder.AddField(x =>
+					{
+						x.Name = "Bans";
+						x.Value = "No users banned... yet";
+						x.IsInline = false;
+					});
+				}
+
+				foreach (var ban in bans)
+				{
+					string description = null;
+
+					if (!String.IsNullOrWhiteSpace(ban.User.Username))
+						description += $"{ban.User.Username}#{ban.User.Discriminator} : Reason -> {ban.Reason}\n";
+					
+					if (!String.IsNullOrWhiteSpace(description))
+					{
+						builder.AddField(x =>
+						{
+							x.Name = "Bans";
+							x.Value = description;
+							x.IsInline = false;
+						});
+					}
+				}
+
+				await ReplyAsync("", false, builder.Build());
+			}
+		}
+
+		[Name("Unban [UserID]")]
+		[Command("unban")]
+		[Summary("Unbans a user that was previously banned.")]
+		[RequireUserPermission(GuildPermission.BanMembers)]
+		public async Task UnbanUser([Remainder] int userID)
+		{
+			var bans = await Context.Guild.GetBansAsync();
+			IUser banneduser = null;
+
+			foreach (var ban in bans)
+			{
+				if (ban.User.DiscriminatorValue == userID)
+					banneduser = ban.User;
+			}
+
+			if (banneduser == null)
+				await ReplyAsync($"I didn't find the User with id -> {userID} under the banhammer are you sure he is here?");
+			else
+			{
+				await Context.Guild.RemoveBanAsync(banneduser);
+				await ReplyAsync($"Ahhh there you are little {banneduser.Username} here you go.");
+			}
 		}
 
 		[Name("Clean")]
