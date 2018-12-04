@@ -165,7 +165,7 @@ namespace DiscordBot.Modules
 		[Command("unban")]
 		[Summary("Unbans a user that was previously banned.")]
 		[RequireUserPermission(GuildPermission.BanMembers)]
-		public async Task UnbanUser([Remainder] int userID)
+		public async Task UnbanUser([Remainder] ulong userID)
 		{
 			var bans = await Context.Guild.GetBansAsync();
 			IUser banneduser = null;
