@@ -191,7 +191,7 @@ namespace DiscordBot.Modules
 		[Command("clean")]
 		[Summary("Cleans 10 previous messages")]
 		[RequireUserPermission(GuildPermission.ManageMessages)]
-		public async Task Clean()
+		public async Task CleanDefault()
 			=> await Clean(10);
 
 		[Name("Clean [Number of messages]")]
