@@ -14,10 +14,12 @@ namespace DiscordBot.Modules
     public class ModeratorModule : ModuleBase<SocketCommandContext>
     {
 		private readonly CommandService _commands;
+		private readonly DiscordSocketClient _client;
 
-		public ModeratorModule(CommandService commands)
+		public ModeratorModule(CommandService commands, DiscordSocketClient client)
 		{
 			_commands = commands;
+			_client = client;
 		}
 
 		[Name("Kick [User]")]
@@ -183,6 +185,46 @@ namespace DiscordBot.Modules
 				await Context.Guild.RemoveBanAsync(banneduser);
 				await ReplyAsync($"Ahhh there you are little {banneduser.Username} here you go.");
 			}
+		}
+
+		[Name("Invite [Username] [UserDescriminator]")]
+		[Command("invite")]
+		[Summary("Invites a user to the server.")]
+		[RequireUserPermission(GuildPermission.CreateInstantInvite)]
+		public async Task InviteUser(string username, string descriminator)
+			=> await InviteUser(username, descriminator, null, null);
+
+		[Name("Invite [Username] [UserDescriminator] [Days Active]")]
+		[Command("invite")]
+		[Summary("Invites a user to the server.")]
+		[RequireUserPermission(GuildPermission.CreateInstantInvite)]
+		public async Task InviteUser(string username, string descriminator, int days)
+			=> await InviteUser(username, descriminator, days, null);
+		
+		[Name("Invite [Username] [UserDescriminator] [Max Invite]")]
+		[Command("inviteuses")]
+		[Summary("Invites a user to the server.")]
+		[RequireUserPermission(GuildPermission.CreateInstantInvite)]
+		public async Task InviteUserUses(string username, string descriminator, int maxInvites)
+			=> await InviteUser(username, descriminator, null, maxInvites);
+
+		[Name("Invite [Username] [UserDescriminator] [Days Active] [Max Invite]")]
+		[Command("invite")]
+		[Summary("Invites a user to the server.")]
+		[RequireUserPermission(GuildPermission.CreateInstantInvite)]
+		public async Task InviteUser(string username, string descriminator, int? days, int? maxInvites)
+		{
+			var channel = Context.Guild.SystemChannel;
+
+			var invite = await channel.CreateInviteAsync(days, maxInvites);
+
+			var user = Context.Client.GetUser(username, descriminator);
+			if (user == null)
+			{
+				await ReplyAsync($"I haven't found anybody with username -> {username}");
+				await invite.DeleteAsync();
+			}
+			await user.SendMessageAsync($"I hereby invite you to {invite.GuildName}, Come with me friend! https://discord.gg/{invite.Code}");
 		}
 
 		[Name("Clean")]
