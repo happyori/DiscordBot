@@ -15,41 +15,59 @@ namespace DiscordBot.Modules
 	[RequireContext(ContextType.Guild)]
 	public class FunModule : ModuleBase<SocketCommandContext>
 	{
-
-		[Name("Join [Chat Name]")]
-		[Command("join")]
-		[Summary("joins the specified voice chat")]
-		public async Task Join(string chatName)
+		[Name("Fun - Audio")]
+		public class AudioModule : ModuleBase
 		{
-			var VChannels = Context.Guild.VoiceChannels;
-			SocketVoiceChannel vcha = null;
+			private readonly AudioService _service;
+			public AudioModule(AudioService service)
+			{
+				_service = service;
+			}
+
+			[Name("Join [Channel Name]")]
+			[Command("join"), Alias("j")]
+			[Summary("Makes Sans Join the specified channel")]
+			public async Task JoinbyName(string name)
+			{
+				IVoiceChannel chl = null;
+				var channels = await Context.Guild.GetVoiceChannelsAsync();
+				foreach (var channel in channels)
+				{
+					if (String.Equals(name, channel.Name))
+						chl = channel;
+				}
+				if (chl == null)
+				{
+					await ReplyAsync($"I can't find channel -> {name}, Do I even have access to it?");
+					return ;
+				}
+				await _service.JoinAudioAsync(Context.Guild, chl);
+			}
 			
-			foreach (var channel in VChannels)
+			[Name("Join")]
+			[Command("join"), Alias("j")]
+			[Summary("Sans Joins to the channel you are in")]
+			public async Task JoinbyUser()
 			{
-				if (String.Compare(chatName, channel.Name) == 0)
-					vcha = channel;
-			}
-			if (vcha == null)
-			{
-				await ReplyAsync($"Couldn't find {chatName} server, are you sure I have access to it?");
-				return ;
+				var channel = (Context.User as IVoiceState).VoiceChannel;
+				if (channel == null)
+				{
+					await ReplyAsync("Am I a joke to you?");
+					return ;
+				}
+
+				await _service.JoinAudioAsync(Context.Guild, channel);
 			}
 
-			var audioClient = await vcha.ConnectAsync();
-			if (!ConnectedChannels.TryAdd(Context.Guild.Id, audioClient))
-				await ReplyAsync($"Error -> Couldn't add audioClient to Dictionary!");
-		}
-		
-		[Name("Leave")]
-		[Command("leave"), Alias("l")]
-		[Summary("Leaves current voice server.")]
-		public async Task Leave()
-		{
-			IAudioClient client;
-			if (ConnectedChannels.TryRemove(Context.Guild.Id, out client))
-				await client.StopAsync();
-			else
-				await ReplyAsync($"Hey I am __not__ connected to any channel!");
+			[Name("Leave")]
+			[Command("leave"), Alias("l")]
+			[Summary("Sans Leaves the server he is in")]
+			public async Task Leave()
+			{
+				string response = await _service.LeaveAudioAsync(Context.Guild);
+				if (!String.IsNullOrEmpty(response))
+					await ReplyAsync(response);
+			}
 		}
 	}
 }
