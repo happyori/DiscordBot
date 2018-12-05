@@ -2,9 +2,10 @@ using System;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using System.Collections;
+using System.Diagnostics;
 using DiscordBot.Services;
 using System.Threading.Tasks;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace DiscordBot.Modules
