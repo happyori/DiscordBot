@@ -19,11 +19,11 @@ namespace DiscordBot.Modules
 		public class AudioModule : ModuleBase
 		{
 			private readonly AudioService _service;
+
 			public AudioModule(AudioService service)
 			{
 				_service = service;
 			}
-
 			[Name("Join [Channel Name]")]
 			[Command("join"), Alias("j")]
 			[Summary("Makes Sans Join the specified channel")]
@@ -67,6 +67,22 @@ namespace DiscordBot.Modules
 				string response = await _service.LeaveAudioAsync(Context.Guild);
 				if (!String.IsNullOrEmpty(response))
 					await ReplyAsync(response);
+			}
+
+			[Name("Talk")]
+			[Command("talk")]
+			[Summary("Summons Sans to join you in voice chat and talk to you!")]
+			public async Task Talk()
+			{
+				var channel = (Context.User as IVoiceState).VoiceChannel;
+				if (channel == null)
+				{
+					await ReplyAsync("Am I a joke to you?");
+					return ;
+				}
+
+				await _service.JoinAudioAsync(Context.Guild, channel);
+				await _service.SendAudioAsync(Context.Guild, Context.Channel, "Audio/sans.mp3");
 			}
 		}
 	}
