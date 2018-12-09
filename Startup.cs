@@ -11,10 +11,10 @@ namespace DiscordBot
 {
 	public static class Globals
 	{
-		public static ulong AuthorId {get; set;}
+		public static ulong AuthorId { get; set; }
 	}
-    public class Startup
-    {
+	public class Startup
+	{
 		public IConfigurationRoot Configuration { get; }
 		public Startup(string[] args)
 		{
@@ -24,7 +24,7 @@ namespace DiscordBot
 			Configuration = builder.Build();
 		}
 
-        public static async Task RunAsync(string[] args)
+		public static async Task RunAsync(string[] args)
 		{
 			var startup = new Startup(args);
 			await startup.RunAsync();
@@ -64,5 +64,5 @@ namespace DiscordBot
 			.AddSingleton<Random>()
 			.AddSingleton(Configuration);
 		}
-    }
+	}
 }
