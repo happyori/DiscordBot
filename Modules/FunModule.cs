@@ -15,6 +15,14 @@ namespace DiscordBot.Modules
 	[RequireContext(ContextType.Guild)]
 	public class FunModule : ModuleBase<SocketCommandContext>
 	{
+		[Name("Say [Echo]")]
+		[Command("say"), Alias("s")]
+		[Summary("Echoes what's been said")]
+		public async Task Say([Remainder] string msg)
+		{
+			await Globals.msg.DeleteAsync();
+			await ReplyAsync(msg);
+		}
 		[Name("Fun - Audio")]
 		public class AudioModule : ModuleBase
 		{
@@ -86,10 +94,10 @@ namespace DiscordBot.Modules
 			}
 		}
 
-		[Name("Roll [Number of Rolls]d[Sides of Dice](+-*/%)(Offset)")]
+		[Name("Roll [Number of Rolls] d [Sides of Dice] (+-*/) (Offset)")]
 		[Command("roll"), Alias("r")]
 		[Summary("Rolls a die for you.")]
-		public async Task Roll(string command)
+		public async Task Roll([Summary(""), Remainder] string command)
 		{
 			/* Command format example !r 2d20 + 10 */
 			#region Prepare
@@ -137,7 +145,7 @@ namespace DiscordBot.Modules
 
 			string[] split = command.Split('d', 2, StringSplitOptions.RemoveEmptyEntries);
 
-			if (!long.TryParse(split[0], out rolls))
+			if (!long.TryParse(split[0], out rolls) || rolls == 0)
 			{
 				await UsageRollAsync();
 				return;
@@ -153,23 +161,29 @@ namespace DiscordBot.Modules
 				switch (sign)
 				{
 					case '+':
-						temp = split[1].Split('+', 2, StringSplitOptions.RemoveEmptyEntries);
+						temp = split[1].Split('+', 2);
 						break;
 					case '-':
-						temp = split[1].Split('-', 2, StringSplitOptions.RemoveEmptyEntries);
+						temp = split[1].Split('-', 2);
 						break;
 					case '*':
-						temp = split[1].Split('*', 2, StringSplitOptions.RemoveEmptyEntries);
+						temp = split[1].Split('*', 2);
 						break;
-					default :
-						temp = split[1].Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
+					default:
+						temp = split[1].Split('/', 2);
 						break;
 				}
 
-				if (!long.TryParse(temp[1], out offset))
+				if (string.IsNullOrEmpty(temp[1]) || !long.TryParse(temp[1], out offset))
 				{
 					await UsageRollAsync();
 					return;
+				}
+
+				if (sign == '/' && offset == 0)
+				{
+					await ReplyAsync($"It is truly unholy to divide by 0\n{Globals.msg.Author.Mention} should be ashamed of yourself!");
+					return ;
 				}
 			}
 			else
@@ -178,7 +192,7 @@ namespace DiscordBot.Modules
 				temp[0] = split[1];
 			}
 
-			if (!int.TryParse(temp[0], out sides))
+			if (!int.TryParse(temp[0], out sides) || sides == 0)
 			{
 				await UsageRollAsync();
 				return;
@@ -214,18 +228,18 @@ namespace DiscordBot.Modules
 				{
 					case '+':
 						sum += offset;
-						break ;
+						break;
 					case '-':
 						sum -= offset;
-						break ;
+						break;
 					case '*':
 						sum *= offset;
-						break ;
-					default :
+						break;
+					default:
 						sum /= offset;
-						break ;
+						break;
 				}
-		
+
 			builder.AddField(x =>
 			{
 				x.Name = "Result:";
@@ -240,16 +254,35 @@ namespace DiscordBot.Modules
 		{
 			if (dbg != null)
 				await ReplyAsync(dbg);
+
+			var authorbuilder = new EmbedAuthorBuilder()
+			{
+				Name = Globals.msg.Author.Username,
+				IconUrl = Globals.msg.Author.GetAvatarUrl(),
+			};
+
+			var footerbuilder = new EmbedFooterBuilder()
+			{
+				Text = "Powered by your's truly"
+			};
+
 			var builder = new EmbedBuilder()
 			{
 				Color = new Color(38, 196, 255),
-				Description = "Usage:"
+				Author = authorbuilder,
+				Footer = footerbuilder,
 			};
 			builder.AddField(x =>
 			{
 				x.Name = "Usage:";
-				x.Value = "!roll(!r) 1d20(+-/*)(10)";
+				x.Value = "!roll(!r) 1d20(+-/*)(Number)";
 				x.IsInline = true;
+			});
+			builder.AddField(x =>
+			{
+				x.Name = "Example:";
+				x.Value = "!r 1d20-1";
+				x.IsInline = false;
 			});
 			await ReplyAsync("", false, builder.Build());
 		}

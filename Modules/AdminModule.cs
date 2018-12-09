@@ -8,16 +8,6 @@ namespace DiscordBot.Modules
 	[Name("Admin")]
     public class AdminModule : ModuleBase<SocketCommandContext>
     {
-		[Name("Say")]
-        [Command("say"), Alias("s")]
-		[Summary("Echoes what's been said")]
-		[RequireUserPermission(GuildPermission.Administrator)]
-		public async Task Say([Remainder] string msg)
-		{
-
-			await ReplyAsync(msg);
-		}
-
 		[Name("Admin - Set")]
 		[Group("set")]
 		[RequireContext(ContextType.Guild)]

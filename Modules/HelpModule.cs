@@ -23,10 +23,23 @@ namespace DiscordBot.Modules
 		public async Task HelpAsync()
 		{
 			string prefix = _config["prefix"];
+			var authorbuilder = new EmbedAuthorBuilder()
+			{
+				Name = Globals.msg.Author.Username,
+				IconUrl = Globals.msg.Author.GetAvatarUrl(),
+			};
+
+			var footerbuilder = new EmbedFooterBuilder()
+			{
+				Text = "Powered by your's truly"
+			};
+
 			var builder = new EmbedBuilder()
 			{
 				Color = new Color(86, 20, 127),
-				Description = "These are the commands you can use"
+				Description = "These are the commands you can use",
+				Author = authorbuilder,
+				Footer = footerbuilder,
 			};
 
 			foreach (var module in _services.Modules)
@@ -69,10 +82,24 @@ namespace DiscordBot.Modules
 			}
 
 			string prefix = _config["prefix"];
+
+			var authorbuilder = new EmbedAuthorBuilder()
+			{
+				Name = Globals.msg.Author.Username,
+				IconUrl = Globals.msg.Author.GetAvatarUrl(),
+			};
+
+			var footerbuilder = new EmbedFooterBuilder()
+			{
+				Text = "Powered by your's truly"
+			};
+
 			var builder = new EmbedBuilder()
 			{
 				Color = new Color(86, 20, 127),
-				Description = $"Here are some commands like **{commandName}**"
+				Description = $"Here are some commands like **{commandName}**",
+				Author = authorbuilder,
+				Footer = footerbuilder,
 			};
 
 			foreach (var match in result.Commands)
