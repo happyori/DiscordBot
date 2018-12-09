@@ -12,6 +12,7 @@ namespace DiscordBot
 	public static class Globals
 	{
 		public static ulong AuthorId { get; set; }
+		public static SocketMessage msg { get; set; }
 	}
 	public class Startup
 	{

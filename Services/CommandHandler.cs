@@ -37,6 +37,7 @@ namespace DiscordBot.Services
 				return ;
 
 			Globals.AuthorId = msg.Author.Id;
+			Globals.msg = msg;
 
 			var context = new SocketCommandContext(_client, msg);
 

@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 namespace DiscordBot.Modules
 {
 	[Name("Help")]
-    public class HelpModule : ModuleBase<SocketCommandContext>
-    {
-        private readonly CommandService _services;
-        private readonly IConfigurationRoot _config;
+	public class HelpModule : ModuleBase<SocketCommandContext>
+	{
+		private readonly CommandService _services;
+		private readonly IConfigurationRoot _config;
 
 		public HelpModule(CommandService services, IConfigurationRoot config)
 		{
@@ -36,7 +36,7 @@ namespace DiscordBot.Modules
 				foreach (var cmd in module.Commands)
 				{
 					var result = await cmd.CheckPreconditionsAsync(Context);
-					if (result.IsSuccess && (!module.IsSubmodule ||string.IsNullOrWhiteSpace(module.Parent.Aliases.First())))
+					if (result.IsSuccess && (!module.IsSubmodule || string.IsNullOrWhiteSpace(module.Parent.Aliases.First())))
 						description += $"{cmd.Name} : {prefix}{cmd.Aliases.First()}\n";
 					else if (result.IsSuccess && module.IsSubmodule)
 						description += $"{cmd.Name} : {prefix}{module.Parent.Aliases.First()} {cmd.Aliases.First()}\n";
@@ -65,7 +65,7 @@ namespace DiscordBot.Modules
 			if (!result.IsSuccess)
 			{
 				await ReplyAsync($"Sorry, I couldn't find the command : **{commandName}**");
-				return ;
+				return;
 			}
 
 			string prefix = _config["prefix"];
@@ -90,5 +90,5 @@ namespace DiscordBot.Modules
 
 			await ReplyAsync("", false, builder.Build());
 		}
-    }
+	}
 }
