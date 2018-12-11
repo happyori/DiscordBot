@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 namespace DiscordBot.Modules
 {
 	[Name("Info")]
-	[Group("info")]
     public class InfoModule : ModuleBase<SocketCommandContext>
     {
 		[Name("Calc [Number] [Sign] [Number]")]
@@ -17,9 +16,9 @@ namespace DiscordBot.Modules
 		{
 			char[] signs = new char[] {'+', '-', '*', '/', '^', '%'};
 			char sign = '\0';
-			long num1 = 0;
-			long num2 = 0;
-			long result = 0;
+			double num1 = 0;
+			double num2 = 0;
+			double result = 0;
 
 			command = command.ToLower();
 			command = command.Trim();
@@ -43,11 +42,11 @@ namespace DiscordBot.Modules
 				Footer = footerbuilder,
 			};
 
-			if (!command.Contains('+') ||
-				!command.Contains('-') ||
-				!command.Contains('*') ||
-				!command.Contains('/') ||
-				!command.Contains('^') ||
+			if (!command.Contains('+') &&
+				!command.Contains('-') &&
+				!command.Contains('*') &&
+				!command.Contains('/') &&
+				!command.Contains('^') &&
 				!command.Contains('%'))
 			{
 				await UsageCalc();
@@ -58,13 +57,13 @@ namespace DiscordBot.Modules
 
 			string[] split = command.Split(sign, 2, StringSplitOptions.RemoveEmptyEntries);
 
-			if (!long.TryParse(split[0], out num1))
+			if (!double.TryParse(split[0], out num1))
 			{
 				await UsageCalc();
 				return ;
 			}
 
-			if (!long.TryParse(split[1], out num2))
+			if (!double.TryParse(split[1], out num2))
 			{
 				await UsageCalc();
 				return ;
@@ -91,7 +90,7 @@ namespace DiscordBot.Modules
 					result = num1 % num2;
 					break;
 				case '^':
-					result = (long)Math.Pow(num1, num2);
+					result = Math.Pow(num1, num2);
 					break;
 				default:
 					result = num1 + num2;

@@ -1,6 +1,9 @@
 using System;
 using Discord;
+using System.IO;
+using System.Linq;
 using Discord.Audio;
+using Newtonsoft.Json;
 using Discord.Commands;
 using Discord.WebSocket;
 using System.Collections;
@@ -285,6 +288,104 @@ namespace DiscordBot.Modules
 				x.IsInline = false;
 			});
 			await ReplyAsync("", false, builder.Build());
+		}
+	
+		private class RespectsNum
+		{
+			public int Count { get; set; }
+			public DateTime day { get; set; }
+
+			public RespectsNum(int i)
+			{
+				Count = i;
+				day = DateTime.Today;
+			}
+		}
+	
+		[Name("Pay Respects")]
+		[Command("f")]
+		[Summary("You pay respects!")]
+		public async Task PayRespects()
+		{
+			RespectsNum nums;
+
+			var user = Globals.msg.Author;
+
+			string fileRes = Path.Combine(AppContext.BaseDirectory, "Respects.json");
+			if (!File.Exists(fileRes))
+				File.Create(fileRes);
+
+			string fileNum = Path.Combine(AppContext.BaseDirectory, "Counts.json");
+			if (!File.Exists(fileNum))
+				File.Create(fileNum);
+
+			string json = File.ReadAllText(fileRes);
+			string num = File.ReadAllText(fileNum);
+
+			string filler;
+
+			Dictionary<string, bool> respects = JsonConvert.DeserializeObject<Dictionary<string, bool>>(json);
+			nums = JsonConvert.DeserializeObject<RespectsNum>(num);
+
+			if (respects == null)
+				respects = new Dictionary<string, bool>();
+			if (nums == null)
+				nums = new RespectsNum(0);
+
+			if (nums.day != DateTime.Today)
+				ResetRespects(respects);
+
+			if (!respects.ContainsKey(user.Username))
+				respects.Add(user.Username, false);
+			if (respects[user.Username])
+				filler = $"**{user.Username}** already paid their respects today!";
+			else
+			{
+				filler = $"**{user.Username}** has paid the respects";
+				nums.Count++;
+				respects[user.Username] = true;
+			}
+
+			var footerBuilder = new EmbedFooterBuilder()
+			{
+				Text = $"Total Counts = {nums.Count}"
+			};
+
+			var authorbuilder = new EmbedAuthorBuilder()
+			{
+				Name = Globals.msg.Author.Username,
+				IconUrl = Globals.msg.Author.GetAvatarUrl(),
+			};
+
+			var builder = new EmbedBuilder()
+			{
+				Color = new Color(255, 0, 135),
+				Description = "Respects",
+				Author = authorbuilder,
+				Footer = footerBuilder,
+			};
+
+			builder.AddField(x =>
+			{
+				x.Name = "Your Respect";
+				x.Value = filler;
+			});
+
+			await ReplyAsync("", false, builder.Build());
+
+			json = JsonConvert.SerializeObject(respects, Formatting.Indented);
+			num = JsonConvert.SerializeObject(nums, Formatting.Indented);
+
+			if (File.Exists(fileRes))
+				await File.WriteAllTextAsync(fileRes, json);
+			if (File.Exists(fileNum))
+				await File.WriteAllTextAsync(fileNum, num);
+		}
+
+		private void ResetRespects(Dictionary<string, bool> respects)
+		{
+			foreach (string key in respects.Keys.ToList())
+				respects[key] = false;
 		}
 	}
 }
