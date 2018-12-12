@@ -6,22 +6,42 @@ using System.Threading.Tasks;
 namespace DiscordBot.Modules
 {
 	[Name("Admin")]
-    public class AdminModule : ModuleBase<SocketCommandContext>
-    {
+	public class AdminModule : ModuleBase<SocketCommandContext>
+	{
+
+		private readonly DiscordSocketClient _client;
+
+		public AdminModule(DiscordSocketClient discord)
+		{
+			_client = discord;
+		}
 		[Name("Admin - Set")]
 		[Group("set")]
 		[RequireContext(ContextType.Guild)]
 		public class Set : ModuleBase
 		{
+			private readonly DiscordSocketClient _client;
+
+			public Set(DiscordSocketClient discord)
+			{
+				_client = discord;
+			}
+
 			[Name("Game [Name]")]
 			[Command("game")]
 			[Summary("Sets the bot's game")]
-			public async Task Game([Remainder] string name)
+			public async Task Game([Remainder] string name = null)
 			{
 				if (Globals.AuthorId != 203408658942394368)
 				{
-					await ReplyAsync($"Only ${await Context.Guild.GetUserAsync(203408658942394368)}")
+					await ReplyAsync($"Only ${await Context.Guild.GetUserAsync(203408658942394368)} can do that!");
+					return;
 				}
+
+				if (name == null)
+					await _client.SetGameAsync("Undertail");
+				else
+					await _client.SetGameAsync(name);
 			}
 
 
@@ -41,7 +61,7 @@ namespace DiscordBot.Modules
 				if (user.Hierarchy > (botUser as SocketGuildUser).Hierarchy)
 				{
 					await ReplyAsync($"{user.Mention} is superior to this humble bot");
-					return ;
+					return;
 				}
 				await (user.ModifyAsync(x =>
 				{
@@ -60,7 +80,7 @@ namespace DiscordBot.Modules
 				if (user.Hierarchy > (botUser as SocketGuildUser).Hierarchy)
 				{
 					await ReplyAsync($"{user.Mention} is superior to this humble bot");
-					return ;
+					return;
 				}
 				await (user.ModifyAsync(x =>
 				{
@@ -69,7 +89,36 @@ namespace DiscordBot.Modules
 				await ReplyAsync($"{user.Mention} I changed your name back!");
 			}
 		}
-		
-		
-    }
+	
+		[Name("Quit")]
+		[Command("quit")]
+		[Summary("Turns of the bot.")]
+		[RequireUserPermission(GuildPermission.Administrator)]
+		public async Task Quit()
+		{
+			if (Globals.AuthorId != 203408658942394368)
+			{
+				await ReplyAsync($"Only ${Context.Guild.GetUser(203408658942394368)} can do that!");
+				return;
+			}
+			var guilds = _client.Guilds;
+
+			foreach (var g in guilds)
+			{
+				string name = g.CurrentUser.Nickname ?? "Sans";
+				if (!name.Contains("(unavailable)"))
+				{
+					name = name.Insert(name.Length, "(unavailable)");
+					await g.CurrentUser.ModifyAsync(x =>
+					{
+						x.Nickname = name;
+					});
+				}
+			}
+			
+			await ReplyAsync("Beep boop beeeee...");
+			await Context.Client.StopAsync();
+			System.Environment.Exit(0);
+		}
+	}
 }

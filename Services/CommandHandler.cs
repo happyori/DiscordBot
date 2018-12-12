@@ -7,12 +7,12 @@ using DiscordBot;
 
 namespace DiscordBot.Services
 {
-    public class CommandHandler
-    {
-        private readonly DiscordSocketClient _client;
-        private readonly CommandService _commands;
-        private readonly IConfigurationRoot _config;
-        private readonly IServiceProvider _provider;
+	public class CommandHandler
+	{
+		private readonly DiscordSocketClient _client;
+		private readonly CommandService _commands;
+		private readonly IConfigurationRoot _config;
+		private readonly IServiceProvider _provider;
 
 		public CommandHandler(
 			DiscordSocketClient client,
@@ -32,9 +32,9 @@ namespace DiscordBot.Services
 		{
 			var msg = s as SocketUserMessage;
 			if (msg == null)
-				return ;
+				return;
 			if (msg.Author.Id == _client.CurrentUser.Id)
-				return ;
+				return;
 
 			Globals.AuthorId = msg.Author.Id;
 			Globals.msg = msg;
@@ -50,6 +50,5 @@ namespace DiscordBot.Services
 					await context.Channel.SendMessageAsync(result.ToString());
 			}
 		}
-
-    }
+	}
 }

@@ -9,11 +9,11 @@ using Discord.WebSocket;
 
 namespace DiscordBot.Services
 {
-    public class StartupService
-    {
-        private readonly DiscordSocketClient _client;
-        private readonly CommandService _commands;
-        private readonly IConfigurationRoot _config;
+	public class StartupService
+	{
+		private readonly DiscordSocketClient _client;
+		private readonly CommandService _commands;
+		private readonly IConfigurationRoot _config;
 
 		public StartupService(
 			DiscordSocketClient client,
@@ -30,11 +30,36 @@ namespace DiscordBot.Services
 			string token = _config["tokens:discord"];
 			if (string.IsNullOrWhiteSpace(token))
 				throw new Exception($"Please enter the bot's token into the 'config.json' file found in the application's root directory its currently is {token}");
-			
+
 			await _client.LoginAsync(TokenType.Bot, token);
 			await _client.StartAsync();
 
+			_client.Ready += ConfigureName;
+
 			await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
 		}
-    }
+
+		private async Task ConfigureName()
+		{
+			var guilds = _client.Guilds;
+
+			foreach (var guild in guilds)
+			{
+				string name = guild.CurrentUser.Nickname;
+				if (name.Contains("(unavailable)"))
+				{
+					if (name != null)
+					{
+						name = name.Remove(name.Length - 13);
+						await guild.CurrentUser.ModifyAsync(x =>
+						{
+							x.Nickname = name;
+						});
+					}
+				}
+			}
+
+			await _client.SetGameAsync("Undertail");
+		}
+	}
 }
