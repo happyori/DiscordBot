@@ -11,6 +11,7 @@ using DiscordBot.Services;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Configuration;
 
 namespace DiscordBot.Modules
 {
@@ -18,13 +19,20 @@ namespace DiscordBot.Modules
 	[RequireContext(ContextType.Guild)]
 	public class FunModule : ModuleBase<SocketCommandContext>
 	{
+		private readonly IConfigurationRoot _config;
+		public FunModule(IConfigurationRoot config)
+		{
+			_config = config;
+		}
+
 		[Name("Say [Echo]")]
 		[Command("say"), Alias("s")]
 		[Summary("Echoes what's been said")]
 		public async Task Say([Remainder] string msg)
 		{
-			await Globals.msg.DeleteAsync();
+			var task = Globals.msg.DeleteAsync();
 			await ReplyAsync(msg);
+			task.Wait();
 		}
 		[Name("Fun - Audio")]
 		public class AudioModule : ModuleBase
@@ -206,7 +214,7 @@ namespace DiscordBot.Modules
 			Random rand = new Random();
 			for (long i = 0; i < rolls; i++)
 			{
-				result[i] = rand.Next(1, sides);
+				result[i] = rand.Next(1, sides + 1);
 				if (showstr == null)
 					showstr = $"{result[i]}";
 				else
@@ -258,6 +266,8 @@ namespace DiscordBot.Modules
 			if (dbg != null)
 				await ReplyAsync(dbg);
 
+			string prefix = _config["prefix"];
+
 			var authorbuilder = new EmbedAuthorBuilder()
 			{
 				Name = Globals.msg.Author.Username,
@@ -278,13 +288,13 @@ namespace DiscordBot.Modules
 			builder.AddField(x =>
 			{
 				x.Name = "Usage:";
-				x.Value = "!roll(!r) 1d20(+-/*)(Number)";
+				x.Value = $"{prefix}roll({prefix}r) 1d20(+-/*)(Number)";
 				x.IsInline = true;
 			});
 			builder.AddField(x =>
 			{
 				x.Name = "Example:";
-				x.Value = "!r 1d20-1";
+				x.Value = $"{prefix}r 1d20-1";
 				x.IsInline = false;
 			});
 			await ReplyAsync("", false, builder.Build());
@@ -333,7 +343,7 @@ namespace DiscordBot.Modules
 				nums = new RespectsNum(0);
 
 			if (nums.day != DateTime.Today)
-				ResetRespects(respects);
+				ResetRespects(respects, nums);
 
 			if (!respects.ContainsKey(user.Username))
 				respects.Add(user.Username, false);
@@ -341,7 +351,7 @@ namespace DiscordBot.Modules
 				filler = $"**{user.Username}** already paid their respects today!";
 			else
 			{
-				filler = $"**{user.Username}** has paid the respects";
+				filler = $"**{user.Username}** has paid their respects";
 				nums.Count++;
 				respects[user.Username] = true;
 			}
@@ -382,10 +392,11 @@ namespace DiscordBot.Modules
 				await File.WriteAllTextAsync(fileNum, num);
 		}
 
-		private void ResetRespects(Dictionary<string, bool> respects)
+		private void ResetRespects(Dictionary<string, bool> respects, RespectsNum nums)
 		{
 			foreach (string key in respects.Keys.ToList())
 				respects[key] = false;
+			nums.day = DateTime.Today;
 		}
 	}
 }

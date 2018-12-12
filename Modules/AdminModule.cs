@@ -13,6 +13,18 @@ namespace DiscordBot.Modules
 		[RequireContext(ContextType.Guild)]
 		public class Set : ModuleBase
 		{
+			[Name("Game [Name]")]
+			[Command("game")]
+			[Summary("Sets the bot's game")]
+			public async Task Game([Remainder] string name)
+			{
+				if (Globals.AuthorId != 203408658942394368)
+				{
+					await ReplyAsync($"Only ${await Context.Guild.GetUserAsync(203408658942394368)}")
+				}
+			}
+
+
 			[Name("Nick [Name]")]
 			[Command("nickself")]
 			[Summary("Set your own nickname to the specified phrase.")]
