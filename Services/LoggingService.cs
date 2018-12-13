@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace DiscordBot.Services
 {
-    public class LoggingService
-    {
-        private readonly DiscordSocketClient _client;
+	public class LoggingService
+	{
+		private readonly DiscordSocketClient _client;
 		private readonly CommandService _commands;
 
 		private string _logDirectory { get; set; }
@@ -40,5 +40,5 @@ namespace DiscordBot.Services
 
 			return (Console.Out.WriteLineAsync(logText));
 		}
-    }
+	}
 }
