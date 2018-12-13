@@ -71,7 +71,7 @@ namespace DiscordBot.Modules
 
 		[Name("Help [Command]")]
 		[Command("help")]
-		public async Task HelpAsync(string commandName)
+		public async Task HelpAsync([Remainder] string commandName)
 		{
 			var result = _services.Search(Context, commandName);
 
