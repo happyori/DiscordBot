@@ -2,3 +2,6 @@ bin/*
 obj/*
 config.json
 .vscode/*
+python/reddit/config
+config
+**/*.sans

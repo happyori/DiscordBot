@@ -6,6 +6,7 @@ using Discord.Audio;
 using Newtonsoft.Json;
 using Discord.Commands;
 using Discord.WebSocket;
+using System.Diagnostics;
 using System.Collections;
 using DiscordBot.Services;
 using System.Threading.Tasks;
@@ -397,6 +398,157 @@ namespace DiscordBot.Modules
 			foreach (string key in respects.Keys.ToList())
 				respects[key] = false;
 			nums.day = DateTime.Today;
+		}
+
+		[Name("Get")]
+		[Group("get")]
+		public class GetModule : ModuleBase<SocketCommandContext>
+		{
+
+			[Name("Warhammer")]
+			[Command("4k"), Alias("wh4k")]
+			[Summary("Gets a random hot post from /r/Warhammer40k")]
+			public async Task getWh4k()
+			{
+				string script_name = "python/reddit/Wh40k/redditer.py";
+				string url = null;
+
+				ProcessStartInfo start = new ProcessStartInfo();
+
+				start.FileName = "/usr/bin/python3.7";
+				start.Arguments = $"{script_name}";
+				start.UseShellExecute = false;
+				start.CreateNoWindow = true;
+
+				Process process = Process.Start(start);
+
+				while (!process.HasExited)
+					continue;
+				
+				using(StreamReader reader = new StreamReader("URL.sans"))
+					url = await reader.ReadToEndAsync();
+
+				if (url == null)
+					throw new Exception("Couldn't get an url from the script");
+
+				if (url.Contains("youtu"))
+				{
+					await ReplyAsync(url);
+					return;
+				}
+
+				var footerBuilder = new EmbedFooterBuilder()
+				{
+					Text = "Powered by reddit",
+				};
+
+				var builder = new EmbedBuilder()
+				{
+					Color = new Color(50, 246, 255),
+					Footer = footerBuilder,
+					ImageUrl = url,
+					Description = "Warhammer40k post"
+				};
+
+				await ReplyAsync("", false, builder.Build());
+			}
+
+			[Name("Random")]
+			[Command("random"), Alias("rand")]
+			[Summary("Gets a random post from a random non-nsfw subreddit")]
+			public async Task GetRand()
+			{
+				string script_name = "python/reddit/Random/random.py";
+				string url = null;
+
+				ProcessStartInfo start = new ProcessStartInfo();
+
+				start.FileName = "/usr/bin/python3.7";
+				start.Arguments = $"{script_name}";
+				start.UseShellExecute = false;
+				start.CreateNoWindow = true;
+
+				Process process = Process.Start(start);
+
+				while (!process.HasExited)
+					continue;
+				
+				using(StreamReader reader = new StreamReader("URL.sans"))
+					url = await reader.ReadToEndAsync();
+
+				if (url == null)
+					throw new Exception("Couldn't get an url from the script");
+
+				if (url.Contains("youtu"))
+				{
+					await ReplyAsync(url);
+					return;
+				}
+
+				var footerBuilder = new EmbedFooterBuilder()
+				{
+					Text = "Powered by reddit",
+				};
+
+				var builder = new EmbedBuilder()
+				{
+					Color = new Color(50, 246, 255),
+					Footer = footerBuilder,
+					ImageUrl = url,
+					Description = "Warhammer40k post"
+				};
+
+				await ReplyAsync("", false, builder.Build());
+			}
+
+			[Name("Random NSFW")]
+			[Command("nsfw")]
+			[Summary("Gets a random post from a random nsfw subreddit")]
+			[RequireNsfw]
+			public async Task GetRandNSFW()
+			{
+				string script_name = "python/reddit/Random_NSFW/random_nsfw.py";
+				string url = null;
+
+				ProcessStartInfo start = new ProcessStartInfo();
+
+				start.FileName = "/usr/bin/python3.7";
+				start.Arguments = $"{script_name}";
+				start.UseShellExecute = false;
+				start.CreateNoWindow = true;
+
+				Process process = Process.Start(start);
+
+				while (!process.HasExited)
+					continue;
+				
+				using(StreamReader reader = new StreamReader("URL.sans"))
+					url = await reader.ReadToEndAsync();
+
+				if (url == null)
+					throw new Exception("Couldn't get an url from the script");
+
+				if (url.Contains("youtu"))
+				{
+					await ReplyAsync(url);
+					return;
+				}
+
+				var footerBuilder = new EmbedFooterBuilder()
+				{
+					Text = "Powered by reddit",
+				};
+
+				var builder = new EmbedBuilder()
+				{
+					Color = new Color(50, 246, 255),
+					Footer = footerBuilder,
+					ImageUrl = url,
+					Description = "Warhammer40k post"
+				};
+
+				await ReplyAsync("", false, builder.Build());
+			}
 		}
 	}
 }
