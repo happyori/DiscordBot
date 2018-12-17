@@ -3,5 +3,10 @@
 	"tokens": 
 	{
 		"discord": null
-	}
+	},
+	"RedditBotUsername": "",
+	"RedditBotPass": "",
+	"RedditClientID": "",
+	"RedditClientSecret": "",
+	"RedditClientURI": ""
 }

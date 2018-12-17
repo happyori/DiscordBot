@@ -25,8 +25,8 @@ namespace DiscordBot.Modules
 			string prefix = _config["prefix"];
 			var authorbuilder = new EmbedAuthorBuilder()
 			{
-				Name = Globals.msg.Author.Username,
-				IconUrl = Globals.msg.Author.GetAvatarUrl(),
+				Name = Globals.Msg.Author.Username,
+				IconUrl = Globals.Msg.Author.GetAvatarUrl(),
 			};
 
 			var footerbuilder = new EmbedFooterBuilder()
@@ -85,8 +85,8 @@ namespace DiscordBot.Modules
 
 			var authorbuilder = new EmbedAuthorBuilder()
 			{
-				Name = Globals.msg.Author.Username,
-				IconUrl = Globals.msg.Author.GetAvatarUrl(),
+				Name = Globals.Msg.Author.Username,
+				IconUrl = Globals.Msg.Author.GetAvatarUrl(),
 			};
 
 			var footerbuilder = new EmbedFooterBuilder()

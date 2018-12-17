@@ -1,18 +1,19 @@
 using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
 using Discord;
+using RedditSharp;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Services;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DiscordBot
 {
 	public static class Globals
 	{
 		public static ulong AuthorId { get; set; }
-		public static SocketMessage msg { get; set; }
+		public static SocketMessage Msg { get; set; }
 	}
 	public class Startup
 	{
@@ -33,8 +34,13 @@ namespace DiscordBot
 
 		public async Task RunAsync()
 		{
+			var RedditAgent = new BotWebAgent(Configuration["RedditBotUsername"],
+											  Configuration["RedditBotPass"],
+											  Configuration["RedditClientID"],
+											  Configuration["RedditClientSecret"],
+											  Configuration["RedditClientURI"]);
 			var services = new ServiceCollection();
-			ConfigureServices(services);
+			ConfigureServices(services, RedditAgent);
 
 			var provider = services.BuildServiceProvider();
 			provider.GetRequiredService<LoggingService>();
@@ -45,7 +51,7 @@ namespace DiscordBot
 			await Task.Delay(-1);
 		}
 
-		private void ConfigureServices(ServiceCollection services)
+		private void ConfigureServices(ServiceCollection services, BotWebAgent BotAgent)
 		{
 			services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
 			{
@@ -58,6 +64,7 @@ namespace DiscordBot
 				DefaultRunMode = RunMode.Async,
 				CaseSensitiveCommands = false
 			}))
+			.AddSingleton(BotAgent)
 			.AddSingleton<StartupService>()
 			.AddSingleton<LoggingService>()
 			.AddSingleton<AudioService>()

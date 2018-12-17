@@ -8,11 +8,17 @@
 
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="2.0.0-beta" />
+    <PackageReference Include="HtmlAgilityPack.NetCore" Version="1.5.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="RedditSharp" Version="2.0.0-CI00075" />
+    <PackageReference Include="System.Runtime.Caching" Version="4.6.0-preview.18571.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="RedditSharp\obj\Debug\net462\project.razor.json" />
+  </ItemGroup>
   <ItemGroup>
     <None Update="config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

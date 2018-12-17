@@ -1,6 +1,7 @@
 using System;
 using Discord;
 using System.IO;
+using RedditSharp;
 using System.Linq;
 using Discord.Audio;
 using Newtonsoft.Json;
@@ -21,9 +22,11 @@ namespace DiscordBot.Modules
 	public class FunModule : ModuleBase<SocketCommandContext>
 	{
 		private readonly IConfigurationRoot _config;
-		public FunModule(IConfigurationRoot config)
+		private readonly BotWebAgent _botWebAgent;
+		public FunModule(IConfigurationRoot config, BotWebAgent botWebAgent)
 		{
 			_config = config;
+			_botWebAgent = botWebAgent;
 		}
 
 		[Name("Say [Echo]")]
@@ -31,7 +34,7 @@ namespace DiscordBot.Modules
 		[Summary("Echoes what's been said")]
 		public async Task Say([Remainder] string msg)
 		{
-			var task = Globals.msg.DeleteAsync();
+			var task = Globals.Msg.DeleteAsync();
 			await ReplyAsync(msg);
 			task.Wait();
 		}
@@ -125,8 +128,8 @@ namespace DiscordBot.Modules
 
 			var authorbuilder = new EmbedAuthorBuilder()
 			{
-				Name = Globals.msg.Author.Username,
-				IconUrl = Globals.msg.Author.GetAvatarUrl(),
+				Name = Globals.Msg.Author.Username,
+				IconUrl = Globals.Msg.Author.GetAvatarUrl(),
 			};
 
 			var footerbuilder = new EmbedFooterBuilder()
@@ -194,8 +197,8 @@ namespace DiscordBot.Modules
 
 				if (sign == '/' && offset == 0)
 				{
-					await ReplyAsync($"It is truly unholy to divide by 0\n{Globals.msg.Author.Mention} should be ashamed of yourself!");
-					return ;
+					await ReplyAsync($"It is truly unholy to divide by 0\n{Globals.Msg.Author.Mention} should be ashamed of yourself!");
+					return;
 				}
 			}
 			else
@@ -271,8 +274,8 @@ namespace DiscordBot.Modules
 
 			var authorbuilder = new EmbedAuthorBuilder()
 			{
-				Name = Globals.msg.Author.Username,
-				IconUrl = Globals.msg.Author.GetAvatarUrl(),
+				Name = Globals.Msg.Author.Username,
+				IconUrl = Globals.Msg.Author.GetAvatarUrl(),
 			};
 
 			var footerbuilder = new EmbedFooterBuilder()
@@ -300,7 +303,7 @@ namespace DiscordBot.Modules
 			});
 			await ReplyAsync("", false, builder.Build());
 		}
-	
+
 		private class RespectsNum
 		{
 			public int Count { get; set; }
@@ -312,7 +315,7 @@ namespace DiscordBot.Modules
 				day = DateTime.Today;
 			}
 		}
-	
+
 		[Name("Pay Respects")]
 		[Command("f")]
 		[Summary("You pay respects!")]
@@ -320,7 +323,7 @@ namespace DiscordBot.Modules
 		{
 			RespectsNum nums;
 
-			var user = Globals.msg.Author;
+			var user = Globals.Msg.Author;
 
 			string fileRes = Path.Combine(AppContext.BaseDirectory, "Respects.json");
 			if (!File.Exists(fileRes))
@@ -364,8 +367,8 @@ namespace DiscordBot.Modules
 
 			var authorbuilder = new EmbedAuthorBuilder()
 			{
-				Name = Globals.msg.Author.Username,
-				IconUrl = Globals.msg.Author.GetAvatarUrl(),
+				Name = Globals.Msg.Author.Username,
+				IconUrl = Globals.Msg.Author.GetAvatarUrl(),
 			};
 
 			var builder = new EmbedBuilder()
@@ -404,29 +407,41 @@ namespace DiscordBot.Modules
 		[Group("get")]
 		public class GetModule : ModuleBase<SocketCommandContext>
 		{
+			private readonly BotWebAgent _botAgent;
+			private readonly Random _random;
+
+			public GetModule(BotWebAgent agent, Random random)
+			{
+				_botAgent = agent;
+				_random = random;
+			}
+
+			private async Task<string> GetImage(string SubName)
+			{
+				var reddit = new Reddit(_botAgent, false);
+				var subreddit = await reddit.GetSubredditAsync(SubName);
+				string url = null;
+				int rn = _random.Next(0, 90);
+				int i = 0;
+
+				await subreddit.GetTop(RedditSharp.Things.FromTime.All, 100).ForEachAsync(post =>
+				{
+					if (i == rn)
+						url = post.Url.ToString();
+					i++;
+				});
+
+				return (url);
+			}
 
 			[Name("Warhammer")]
 			[Command("4k"), Alias("wh4k")]
 			[Summary("Gets a random hot post from /r/Warhammer40k")]
-			public async Task getWh4k()
+			public async Task GetWh4k()
 			{
-				string script_name = "python/reddit/Wh40k/redditer.py";
 				string url = null;
 
-				ProcessStartInfo start = new ProcessStartInfo();
-
-				start.FileName = "/usr/bin/python3.7";
-				start.Arguments = $"{script_name}";
-				start.UseShellExecute = false;
-				start.CreateNoWindow = true;
-
-				Process process = Process.Start(start);
-
-				while (!process.HasExited)
-					continue;
-				
-				using(StreamReader reader = new StreamReader("URL.sans"))
-					url = await reader.ReadToEndAsync();
+				url = await GetImage("Warhammer40k");
 
 				if (url == null)
 					throw new Exception("Couldn't get an url from the script");
@@ -458,23 +473,10 @@ namespace DiscordBot.Modules
 			[Summary("Gets a random post from a random non-nsfw subreddit")]
 			public async Task GetRand()
 			{
-				string script_name = "python/reddit/Random/random.py";
 				string url = null;
 
-				ProcessStartInfo start = new ProcessStartInfo();
-
-				start.FileName = "/usr/bin/python3.7";
-				start.Arguments = $"{script_name}";
-				start.UseShellExecute = false;
-				start.CreateNoWindow = true;
-
-				Process process = Process.Start(start);
-
-				while (!process.HasExited)
-					continue;
-				
-				using(StreamReader reader = new StreamReader("URL.sans"))
-					url = await reader.ReadToEndAsync();
+				url = await GetImage("Warhammer40k");
+				// ! change the Warhammer40k to rand
 
 				if (url == null)
 					throw new Exception("Couldn't get an url from the script");
@@ -495,7 +497,7 @@ namespace DiscordBot.Modules
 					Color = new Color(50, 246, 255),
 					Footer = footerBuilder,
 					ImageUrl = url,
-					Description = "Warhammer40k post"
+					Description = "Random post"
 				};
 
 				await ReplyAsync("", false, builder.Build());
@@ -507,23 +509,9 @@ namespace DiscordBot.Modules
 			[RequireNsfw]
 			public async Task GetRandNSFW()
 			{
-				string script_name = "python/reddit/Random_NSFW/random_nsfw.py";
 				string url = null;
 
-				ProcessStartInfo start = new ProcessStartInfo();
-
-				start.FileName = "/usr/bin/python3.7";
-				start.Arguments = $"{script_name}";
-				start.UseShellExecute = false;
-				start.CreateNoWindow = true;
-
-				Process process = Process.Start(start);
-
-				while (!process.HasExited)
-					continue;
-				
-				using(StreamReader reader = new StreamReader("URL.sans"))
-					url = await reader.ReadToEndAsync();
+				url = await GetImage("NSFW");
 
 				if (url == null)
 					throw new Exception("Couldn't get an url from the script");
@@ -544,7 +532,7 @@ namespace DiscordBot.Modules
 					Color = new Color(50, 246, 255),
 					Footer = footerBuilder,
 					ImageUrl = url,
-					Description = "Warhammer40k post"
+					Description = "HueHue post"
 				};
 
 				await ReplyAsync("", false, builder.Build());
