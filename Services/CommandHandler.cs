@@ -1,9 +1,13 @@
 using System;
+using System.IO;
+using System.Collections.Generic;
 using Discord.Commands;
 using Discord.WebSocket;
+using Discord;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using DiscordBot;
+using Newtonsoft.Json;
 
 namespace DiscordBot.Services
 {
@@ -39,6 +43,13 @@ namespace DiscordBot.Services
 			Globals.AuthorId = msg.Author.Id;
 			Globals.Msg = msg;
 
+			foreach (var attachment in msg.Attachments)
+			{
+				if (attachment == null)
+					break;
+				await AddVoteAsync(msg);
+			}
+
 			var context = new SocketCommandContext(_client, msg);
 
 			int argPos = 0;
@@ -49,6 +60,51 @@ namespace DiscordBot.Services
 				if (!result.IsSuccess)
 					await context.Channel.SendMessageAsync(result.ToString());
 			}
+		}
+
+
+		private async Task AddVoteAsync(SocketUserMessage msg)
+		{
+			Dictionary<ulong, Votes> votes;
+			Votes init;
+
+			string fileName = Path.Combine(AppContext.BaseDirectory, "Votes.json");
+			if (!File.Exists(fileName))
+				File.Create(fileName);
+
+			string json = await File.ReadAllTextAsync(fileName);
+			votes = JsonConvert.DeserializeObject<Dictionary<ulong, Votes>>(json);
+
+			if (votes == null)
+			{
+				votes = new Dictionary<ulong, Votes>();
+			}
+			
+			if (!votes.ContainsKey(msg.Id))
+			{
+				init = new Votes(1, 1);
+				votes.Add(msg.Id, init);
+			}
+
+			json = JsonConvert.SerializeObject(votes, Formatting.Indented);
+
+			if (File.Exists(fileName))
+				await File.WriteAllTextAsync(fileName, json);
+
+			await msg.AddReactionAsync(new Emoji("👍"));
+			await Task.Delay(2);
+			await msg.AddReactionAsync(new Emoji("👎"));
+			
+		}
+	}
+	public class Votes
+	{
+		public long upVote;
+		public long downVote;
+		public Votes(long up, long down)
+		{
+			upVote = up;
+			downVote = down;
 		}
 	}
 }

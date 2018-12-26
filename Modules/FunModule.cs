@@ -537,6 +537,49 @@ namespace DiscordBot.Modules
 
 				await ReplyAsync("", false, builder.Build());
 			}
+
+			[Name("Score (ID/Possition)")]
+			[Command("score")]
+			[Summary("Sums up the score for either the ID of message or possition of it starting from last recorded msg")]
+			public async Task Score(ulong ID)
+			{
+				Dictionary<ulong, Votes> dict;
+				Votes votes;
+
+				string fileName = Path.Combine(AppContext.BaseDirectory, "Votes.json");
+				if (!File.Exists(fileName))
+					throw new Exception("No File");
+
+				string json = await File.ReadAllTextAsync(fileName);
+				dict = JsonConvert.DeserializeObject<Dictionary<ulong, Votes>>(json);
+
+				if (dict == null)
+					throw new Exception("No Info");
+
+				if (!dict.TryGetValue(ID, out votes))
+				{
+					int i = 0;
+					ulong msgID = 0;
+
+					if ((int)ID >= dict.Count)
+						i = dict.Count;
+					else
+						i = (int)ID;
+
+					msgID = dict.ElementAt(dict.Count - i).Key;
+
+					if (!dict.TryGetValue(msgID, out votes))
+						throw new Exception("No Message");
+				}
+
+				long sum = 0;
+
+				sum += votes.upVote;
+				sum -= votes.downVote;
+
+				await ReplyAsync($"The sum is : **{sum}**");
+			}
+
 		}
 	}
 }
